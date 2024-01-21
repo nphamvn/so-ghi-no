@@ -1,0 +1,29 @@
+@SoGhiNo_HostAddress = http://localhost:5066
+
+GET {{SoGhiNo_HostAddress}}/?id=3
+Accept: application/json
+
+###
+POST  {{SoGhiNo_HostAddress}}/?id=2
+Content-Type: application/json
+
+{
+    "name": "HÀ THÂN"
+}
+
+###
+POST  {{SoGhiNo_HostAddress}}/Items?id=3
+Content-Type: application/json
+
+{
+    "name": "Bình gas",
+    "date": "2019-01-01",
+    "ammount": 420000
+}
+
+
+###
+GET {{SoGhiNo_HostAddress}}/Items/1
+
+
+
