@@ -8,22 +8,25 @@ type Inputs = {
   date: string;
   name: string;
   amount: number;
-  paid: string;
-  paidDate?: string;
+  paid: number;
 };
 export default function CreateItem() {
   const [searchParams] = useSearchParams();
   const folderId = parseInt(searchParams.get("id")!);
   const itemId = useParams()["id"];
   const [folder, setFolder] = useState<Folder>();
-  const { register, handleSubmit, setValue } = useForm<Inputs>({
+  const { register, handleSubmit, setValue, watch } = useForm<Inputs>({
     defaultValues: {
       date: "01-01-2021",
       name: "",
       amount: 0,
-      paidDate: "",
+      paid: 0,
     },
   });
+
+  const amount = watch("amount");
+  const paid = watch("paid");
+  const remain = amount - paid;
 
   useEffect(() => {
     getFolder(folderId).then((folder) => setFolder(folder));
@@ -33,7 +36,7 @@ export default function CreateItem() {
         setValue("date", item.date);
         setValue("name", item.name);
         setValue("amount", item.amount);
-        setValue("paidDate", item.paidDate);
+        setValue("paid", item.paid);
       });
     }
   }, []);
@@ -45,7 +48,7 @@ export default function CreateItem() {
         data.date,
         data.name,
         data.amount,
-        data.paidDate
+        data.paid
       );
     } else {
       await createItem(folderId, data.date, data.name, data.amount, data.paid);
@@ -55,7 +58,7 @@ export default function CreateItem() {
   return (
     <div className="p-2">
       <h1 className="font-bold">
-        GHI NỢ MỚI CHO <span className="text-red-500">{folder?.name}</span>
+        GHI NỢ MỚI CHO <span className="text-red-500">{folder?.name.toUpperCase()}</span>
       </h1>
       <form onSubmit={handleSubmit(onSubmit)} className="mt-2">
         <div>
@@ -76,11 +79,10 @@ export default function CreateItem() {
         </div>
         <div className="mt-2">
           <label>NỘI DUNG</label>
-          <input
-            type="text"
+          <textarea
             {...register("name")}
-            className="w-full block p-2"
-          />
+            className="w-full block p-2">
+          </textarea>
         </div>
         <div className="mt-2">
           <label>SỐ TIỀN</label>
@@ -91,28 +93,26 @@ export default function CreateItem() {
           />
         </div>
         <div className="mt-2">
-          <label className="">THANH TOÁN</label>
-          <div className="flex space-x-3">
-            <label>
-              <input
-                type="radio"
-                {...register("paid")}
-                value={"false"}
-                className="mr-1"
-              />
-              CHƯA
-            </label>
-            <label>
-              <input
-                type="radio"
-                {...register("paid")}
-                value={"true"}
-                className="mr-1"
-              />
-              RỒI
-            </label>
+          <label className="">ĐÃ TRẢ</label>
+          <div className="flex">
+            <input
+              type="number"
+              {...register("paid")}
+              className="w-full block p-2"
+            />
+            <button
+              type="button"
+              onClick={() => setValue("paid", amount)}
+              className="bg-blue-500 text-white rounded p-2 min-w-24"
+            >
+              TOÀN BỘ
+            </button>
           </div>
         </div>
+        <div className="mt-2">
+          <label>CÒN THIẾU: <span className={remain === 0 ? "text-green-500" : 'text-red-500'}>{remain}</span></label>
+        </div>
+
         <div className="mt-2 flex space-x-1">
           <Link
             to={`/Items?id=${folderId}`}
@@ -127,7 +127,7 @@ export default function CreateItem() {
             LƯU
           </button>
         </div>
-      </form>
-    </div>
+      </form >
+    </div >
   );
 }

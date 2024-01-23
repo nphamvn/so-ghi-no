@@ -7,15 +7,17 @@ import CreateItem from "./CreateItem";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" Component={Browser} />
-        <Route path="/CreateFolder" Component={CreateFolder} />
-        <Route path="/Items" Component={ItemList} />
-        <Route path="/Items/New" Component={CreateItem} />
-        <Route path="/Items/:id" Component={CreateItem} />
-      </Routes>
-    </BrowserRouter>
+    <div className="p-3">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" Component={Browser} />
+          <Route path="/CreateFolder" Component={CreateFolder} />
+          <Route path="/Items" Component={ItemList} />
+          <Route path="/Items/New" Component={CreateItem} />
+          <Route path="/Items/:id" Component={CreateItem} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }
 

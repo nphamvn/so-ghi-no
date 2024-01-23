@@ -35,11 +35,11 @@ app.UseHttpsRedirection();
 app.UseCors();
 
 //Get sub folders and items in folder
-app.MapGet("/", async (int id, AppDbContext dbContext) =>
+app.MapGet("/", async (int id, string? name, AppDbContext dbContext) =>
 {
     var folder = await dbContext.Folders
-        .Include(f => f.SubFolders)
-        .Include(f => f.Items)
+        .Include(f => f.SubFolders.Where(sf => string.IsNullOrEmpty(name) || EF.Functions.Like(sf.Name, $"%{name}%")))
+        .Include(f => f.Items.Where(i => string.IsNullOrEmpty(name) || EF.Functions.Like(i.Name, $"%{name}%")))
         .SingleAsync(f => f.Id == id);
 
     return Results.Ok(new
@@ -58,7 +58,7 @@ app.MapGet("/", async (int id, AppDbContext dbContext) =>
             i.Name,
             i.Date,
             i.Amount,
-            i.PaidDate
+            i.Paid
         })
     });
 });
@@ -79,14 +79,14 @@ app.MapPost("/", async (int id, [FromBody] FolderCreateUpdateRequest folder, App
 //Create new item
 app.MapPost("/Items", async (int id, [FromBody] ItemCreateUpdateRequest item, AppDbContext dbContext) =>
 {
-    var newItem = new Item
+    await dbContext.Items.AddAsync(new Item
     {
         Name = item.Name,
         Date = item.Date,
         Amount = item.Amount,
+        Paid = item.Paid,
         ParentFolderId = id
-    };
-    await dbContext.Items.AddAsync(newItem);
+    });
     await dbContext.SaveChangesAsync();
 
     return Results.Ok();
@@ -95,8 +95,14 @@ app.MapPost("/Items", async (int id, [FromBody] ItemCreateUpdateRequest item, Ap
 //Get item by id
 app.MapGet("/Items/{itemId}", async (int itemId, AppDbContext dbContext) =>
 {
-    var item = await dbContext.Items.FindAsync(itemId);
-    return Results.Ok(item);
+    var item = await dbContext.Items.SingleAsync(i => i.Id == itemId);
+    return Results.Ok(new {
+        item.Id,
+        item.Name,
+        item.Date,
+        item.Amount,
+        item.Paid
+    });
 });
 
 //Update item
@@ -106,6 +112,7 @@ app.MapPut("/Items/{itemId}", async (int itemId, [FromBody] ItemCreateUpdateRequ
     itemToUpdate.Name = item.Name;
     itemToUpdate.Date = item.Date;
     itemToUpdate.Amount = item.Amount;
+    itemToUpdate.Paid = item.Paid;
     await dbContext.SaveChangesAsync();
 
     return Results.Ok();
@@ -123,4 +130,5 @@ class ItemCreateUpdateRequest
     public string Name { get; set; }
     public DateTime Date { get; set; }
     public int Amount { get; set; }
+    public int Paid { get; set; }
 }

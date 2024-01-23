@@ -3,5 +3,5 @@ export interface Item {
     name: string;
     date: string;
     amount: number;
-    paidDate?: string;
+    paid: number;
 }

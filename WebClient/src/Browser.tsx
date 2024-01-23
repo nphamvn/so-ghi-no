@@ -2,34 +2,43 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getFolder } from "./service";
 import { Folder } from "./Folder";
+import { useForm } from "react-hook-form";
+
+type SearchInputs = { name: string };
 
 export default function Browser() {
   const [searchParams] = useSearchParams();
   const id = parseInt(searchParams.get("id") || "1");
-  const [contents, setContents] = useState<Folder>();
-  const fetchData = async () => {
-    const contents = await getFolder(id);
-    setContents(contents);
+  const [folder, setFolder] = useState<Folder>();
+  const subFolders = folder?.subFolders.sort(function (a, b) {
+    return a.name.localeCompare(b.name);
+  }) || [];
+
+  const { register, handleSubmit, watch, getValues } = useForm<SearchInputs>();
+  const name = watch("name");
+  const onSubmit = (data: SearchInputs) => {
+    console.log(data);
   };
+  const fetchData = async () => {
+    const folder = await getFolder(id, getValues("name"));
+    setFolder(folder);
+  };
+
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [id, name]);
 
   return (
     <div className="p-2">
-      <form>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex">
           <input
             type="search"
-            placeholder="NHẬP TÊN XÓM HOẶC TÊN NGƯỜI"
+            {...register("name")}
+            autoComplete="none"
+            placeholder="NHẬP TÊN SỔ HOẶC TÊN HỘ GIA ĐÌNH"
             className="w-full block p-2"
           />
-          <button
-            type="submit"
-            className="ms-auto bg-blue-500 text-white rounded"
-          >
-            TÌM KIẾM
-          </button>
         </div>
       </form>
       <hr className="my-2" />
@@ -39,7 +48,7 @@ export default function Browser() {
             to={"/CreateFolder"}
             className="bg-green-500 text-white rounded p-2"
           >
-            THÊM XÓM
+            THÊM SỔ MỚI
           </Link>
         </div>
       )}
@@ -56,13 +65,13 @@ export default function Browser() {
               TẠO NGƯỜI NỢ MỚI
             </Link>
           </div>
-          <h4 className="mt-2 font-bold">DANH SÁCH {contents?.name}</h4>
+          <h4 className="mt-2 font-bold">DANH SÁCH <span className="text-red-500">{folder?.name}</span></h4>
         </div>
       )}
       <ul className="divide-y mt-2">
-        {contents?.subFolders.map((f) => (
+        {subFolders.map((f) => (
           <li key={f.id} className="px-2 py-3">
-            <Link to={id === 1 ? `/?id=${f.id}`: `/Items?id=${f.id}`} className="block">{f.name.toUpperCase()}</Link>
+            <Link to={id === 1 ? `/?id=${f.id}` : `/Items?id=${f.id}`} className="block">{f.name.toUpperCase()}</Link>
           </li>
         ))}
       </ul>

@@ -1,8 +1,8 @@
 import { Folder } from "./Folder";
 import { Item } from "./Item";
 
-export const getFolder = async (id: number) => {
-  const response = await fetch(`http://localhost:5066/?id=${id}`);
+export const getFolder = async (id: number, name?: string) => {
+  const response = await fetch(`http://localhost:5066/?id=${id}&name=${name || ""}`);
   const data = (await response.json()) as Folder;
   return data;
 };
@@ -28,14 +28,14 @@ export const createItem = async (
   date: string,
   name: string,
   amount: number,
-  paidDate?: string
+  paid: number
 ) => {
   const response = await fetch(`http://localhost:5066/Items/?id=${folderId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ date, name, amount, paidDate }),
+    body: JSON.stringify({ date, name, amount, paid }),
   });
   const data = (await response.json()) as Item;
   return data;
@@ -46,14 +46,14 @@ export const updateItem = async (
   date: string,
   name: string,
   amount: number,
-  paidDate?: string
+  paid: number
 ) => {
   const response = await fetch(`http://localhost:5066/Items/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ date, name, amount, paidDate }),
+    body: JSON.stringify({ date, name, amount, paid }),
   });
   const data = (await response.json()) as Item;
   return data;
